@@ -15,6 +15,20 @@ This folder contains the first generated visual asset batch for **Kurukshetra: R
 | `Animations/divine_arrow_charge_sprite_sheet_8frames.svg` | Vector sprite-sheet source | Rasterize to 8 x 512px frames for Unity |
 | `Lottie/divine_arrow_charge_loop.json` | Lottie-style UI animation | Ability button charge/reward reveal |
 
+## How to extract the asset files from GitHub
+
+The GitHub connector used for this batch writes UTF-8 text files, so the ZIP asset package is stored as Base64 chunks under:
+
+`Assets/Art/Generated/Kurukshetra/v0_1/Package/`
+
+From the repository root, run:
+
+```bash
+python tools/extract_kurukshetra_art_pack.py
+```
+
+The script verifies the SHA-256 checksum, reconstructs `kurukshetra_generated_art_v0_1.zip`, and extracts the SVG, animated SVG, Lottie JSON, manifest, README, and license into this folder.
+
 ## Unity import notes
 
 1. Keep the SVG files as editable source masters.
