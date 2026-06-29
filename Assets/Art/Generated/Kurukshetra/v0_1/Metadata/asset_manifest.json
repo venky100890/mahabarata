@@ -1,0 +1,122 @@
+{
+  "pack_id": "kurukshetra_generated_art_v0_1",
+  "game": "Kurukshetra: Rise of the Legends",
+  "created_utc": "2026-06-29T03:20:00Z",
+  "art_direction": "Cinematic mythological Indian epic, warm gold/saffron highlights, deep indigo shadows, ornate hero-card UI, mobile strategy RPG readability.",
+  "license": "Project-owned generated assets for venky100890/mahabarata. Review before commercial use and replace with final commissioned art when available.",
+  "assets": [
+    {
+      "id": "hero_arjuna_card_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Concepts/hero_arjuna_high_fidelity.svg",
+      "type": "concept_art_svg",
+      "dimensions": "1400x1400",
+      "intended_use": [
+        "hero_card",
+        "store_listing_mockup",
+        "dialogue_portrait_placeholder"
+      ],
+      "status": "production_placeholder",
+      "notes": "Vector artwork; scalable and Unity-importable after SVG package setup or raster export."
+    },
+    {
+      "id": "battlefield_sunset_panorama_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Concepts/battlefield_sunset_panorama.svg",
+      "type": "environment_concept_svg",
+      "dimensions": "1920x1080",
+      "intended_use": [
+        "campaign_map_background",
+        "loading_screen",
+        "marketing_key_art_blockout"
+      ],
+      "status": "production_placeholder"
+    },
+    {
+      "id": "hastinapura_fortress_base_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Concepts/hastinapura_fortress_base.svg",
+      "type": "base_building_concept_svg",
+      "dimensions": "1920x1080",
+      "intended_use": [
+        "base_screen_concept",
+        "building_upgrade_ui",
+        "tutorial_background"
+      ],
+      "status": "production_placeholder"
+    },
+    {
+      "id": "divine_arrow_charge_loop_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Animations/divine_arrow_charge_loop.svg",
+      "type": "animated_svg",
+      "dimensions": "1024x1024",
+      "duration_seconds": 1.8,
+      "loop": true,
+      "intended_use": [
+        "hero_ability_vfx",
+        "ultimate_charge_ui",
+        "reward_reveal"
+      ],
+      "status": "engine_ready_after_import_test"
+    },
+    {
+      "id": "war_banner_idle_loop_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Animations/war_banner_idle_loop.svg",
+      "type": "animated_svg",
+      "dimensions": "768x768",
+      "duration_seconds": 1.8,
+      "loop": true,
+      "intended_use": [
+        "alliance_banner",
+        "pvp_queue_screen",
+        "campaign_node_idle"
+      ],
+      "status": "engine_ready_after_import_test"
+    },
+    {
+      "id": "shield_powerup_loop_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Animations/shield_powerup_loop.svg",
+      "type": "animated_svg",
+      "dimensions": "768x768",
+      "duration_seconds": 1.6,
+      "loop": true,
+      "intended_use": [
+        "buff_icon_vfx",
+        "battle_powerup",
+        "reward_fx"
+      ],
+      "status": "engine_ready_after_import_test"
+    },
+    {
+      "id": "divine_arrow_sprite_sheet_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Animations/divine_arrow_charge_sprite_sheet_8frames.svg",
+      "type": "sprite_sheet_svg",
+      "dimensions": "4096x512",
+      "frames": 8,
+      "frame_size": "512x512",
+      "intended_use": [
+        "spritesheet_raster_source",
+        "ability_vfx_frames"
+      ],
+      "status": "source_ready"
+    },
+    {
+      "id": "divine_arrow_lottie_v001",
+      "path": "Assets/Art/Generated/Kurukshetra/v0_1/Lottie/divine_arrow_charge_loop.json",
+      "type": "lottie_json",
+      "dimensions": "1024x1024",
+      "duration_frames": 60,
+      "framerate": 30,
+      "loop": true,
+      "intended_use": [
+        "ui_animation",
+        "reward_reveal",
+        "ability_button_charge"
+      ],
+      "status": "import_ready_for_lottie_plugin"
+    }
+  ],
+  "unity_import_notes": [
+    "For static SVGs, install Unity Vector Graphics or rasterize to PNG at target resolutions.",
+    "For animated SVGs, rasterize frames or convert to sprite sheets if the target runtime does not support SVG animation.",
+    "The Lottie JSON is intended for UI motion via a Unity Lottie-compatible plugin.",
+    "Keep the SVG source files as editable masters under version control."
+  ]
+}
