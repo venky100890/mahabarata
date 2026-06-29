@@ -21,7 +21,7 @@ from zipfile import ZipFile
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_DIR = ROOT / "Assets" / "Art" / "Generated" / "Kurukshetra" / "v0_1" / "Package"
 OUT_ZIP = PACKAGE_DIR / "kurukshetra_generated_art_v0_1.zip"
-EXPECTED_SHA256 = "d789fdb4225a1ab9938fba4ff1c871647e832f535c3880ebf4dbdf2407594f83"
+EXPECTED_SHA256 = "1a375244c21c2d0a5a034f635865368cd779ab984a3d4038ae0bb2b2464097b3"
 
 
 def main() -> None:
