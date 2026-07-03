@@ -9,8 +9,9 @@ Assets/Art/Kurukshetra/
 ## Current status
 
 - `.gitattributes` has been added so PNG, GIF, MP4, ZIP, and other large art files are tracked through Git LFS.
-- The v0.3 generated asset ZIP is available from the ChatGPT conversation as `kurukshetra_png_hq_asset_pack_v0_3.zip`.
-- The ZIP must be unzipped locally and committed with Git LFS because the ChatGPT GitHub connector only writes UTF-8 text files and cannot directly upload the 50 MB binary art package.
+- The v0.3 generated asset ZIP is uploaded to Google Drive: https://drive.google.com/file/d/1ahRbch26Xb_l1oAAmF8qJ-uN8vx4BLje/view?usp=drivesdk
+- The Drive folder is: https://drive.google.com/drive/folders/1S49WfgaQVNfVtmlesmjQ65G1BXHJs54v
+- The ZIP should be unzipped locally and committed with Git LFS so the Unity project can reference the assets directly from the repository.
 
 ## Recommended import steps
 
@@ -23,14 +24,17 @@ git lfs install
 # 2. Confirm LFS patterns are active
 git lfs track
 
-# 3. Unzip the v0.3 pack into a temporary folder
+# 3. Download kurukshetra_png_hq_asset_pack_v0_3.zip from Google Drive
+#    https://drive.google.com/file/d/1ahRbch26Xb_l1oAAmF8qJ-uN8vx4BLje/view?usp=drivesdk
+
+# 4. Unzip the v0.3 pack into a temporary folder
 unzip ~/Downloads/kurukshetra_png_hq_asset_pack_v0_3.zip -d /tmp/kurukshetra_v0_3
 
-# 4. Copy the Unity-ready folder into the project
+# 5. Copy the Unity-ready folder into the project
 mkdir -p Assets/Art
 rsync -av /tmp/kurukshetra_v0_3/Assets/Art/Kurukshetra/ Assets/Art/Kurukshetra/
 
-# 5. Open Unity once and let it generate .meta files
+# 6. Open Unity once and let it generate .meta files
 #    Then return to terminal and commit everything.
 
 git status
