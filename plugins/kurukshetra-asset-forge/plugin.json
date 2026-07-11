@@ -1,0 +1,14 @@
+{
+  "name": "kurukshetra-asset-forge",
+  "version": "1.0.0",
+  "entry_skill": "SKILL.md",
+  "manifest_source": "Google Drive file 1hG9ZtnEGhkzDcv70p6s_ayOk74fnC0UN",
+  "checkpoint": "state/checkpoint.csv",
+  "default_batch_size": 4,
+  "max_recommended_batch_size": 8,
+  "requires": [
+    "image_gen",
+    "Google_Drive"
+  ],
+  "production_root": "https://drive.google.com/drive/folders/1cV-fAlJQjpJ-CnAZ_x27sBkR-yCpOATw"
+}
