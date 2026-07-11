@@ -1,0 +1,132 @@
+name: Kurukshetra Asset Forge
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: Assets in this run (1-30)
+        required: false
+        default: "30"
+      category:
+        description: Manifest category or all
+        required: false
+        default: "all"
+      auto_continue:
+        description: Start the next batch while pending assets remain
+        required: false
+        default: "true"
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: kurukshetra-asset-forge
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install bootstrap dependencies
+        run: pip install google-api-python-client google-auth
+
+      - name: Download Asset Forge runtime from Drive
+        env:
+          GOOGLE_DRIVE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS_JSON }}
+          RUNTIME_FILE_ID: "156HgnWG5ucCxDQT8y9UCLmcbm0zBgJ15"
+        run: |
+          python - <<'PY'
+          import json, os
+          from google.oauth2.credentials import Credentials
+          from googleapiclient.discovery import build
+          from googleapiclient.http import MediaIoBaseDownload
+          info = json.loads(os.environ["GOOGLE_DRIVE_CREDENTIALS_JSON"])
+          creds = Credentials.from_authorized_user_info(info, scopes=["https://www.googleapis.com/auth/drive"])
+          drive = build("drive", "v3", credentials=creds, cache_discovery=False)
+          request = drive.files().get_media(fileId=os.environ["RUNTIME_FILE_ID"])
+          with open("/tmp/kurukshetra_asset_forge_runtime.zip", "wb") as output:
+              downloader = MediaIoBaseDownload(output, request, chunksize=10 * 1024 * 1024)
+              done = False
+              while not done:
+                  status, done = downloader.next_chunk()
+                  if status:
+                      print(f"runtime download {status.progress() * 100:.1f}%")
+          PY
+          rm -rf .asset_forge_runtime
+          mkdir .asset_forge_runtime
+          unzip -q /tmp/kurukshetra_asset_forge_runtime.zip -d .asset_forge_runtime
+          mkdir -p .asset_forge_runtime/asset_pipeline/state
+          if [ -f asset_pipeline/state/checkpoint.csv ]; then
+            cp asset_pipeline/state/checkpoint.csv .asset_forge_runtime/asset_pipeline/state/checkpoint.csv
+          fi
+
+      - name: Install runtime dependencies
+        run: pip install -r .asset_forge_runtime/asset_pipeline/requirements.txt
+
+      - name: Generate, QA, and upload batch
+        id: forge
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_DRIVE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS_JSON }}
+          GOOGLE_DRIVE_ROOT_FOLDER_ID: "1cV-fAlJQjpJ-CnAZ_x27sBkR-yCpOATw"
+          BATCH_SIZE: ${{ inputs.batch_size || '30' }}
+          CATEGORY: ${{ inputs.category || 'all' }}
+          OPENAI_IMAGE_MODEL_OPAQUE: gpt-image-2
+          OPENAI_IMAGE_MODEL_TRANSPARENT: gpt-image-1.5
+          OPENAI_QA_MODEL: gpt-5.6
+          IMAGE_QUALITY: high
+          IMAGE_SIZE_PROFILE: standard
+          SEMANTIC_QA_ENABLED: "true"
+          MAX_ATTEMPTS: "3"
+        run: |
+          cd .asset_forge_runtime
+          python tools/kurukshetra_asset_runner.py --batch-size "$BATCH_SIZE" --category "$CATEGORY"
+          cd ..
+          mkdir -p asset_pipeline/state asset_pipeline/reports
+          cp .asset_forge_runtime/asset_pipeline/state/checkpoint.csv asset_pipeline/state/checkpoint.csv
+          cp .asset_forge_runtime/asset_pipeline/reports/latest.json asset_pipeline/reports/latest.json
+
+      - name: Upload run report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kurukshetra-asset-run-${{ github.run_number }}
+          path: |
+            asset_pipeline/state/checkpoint.csv
+            asset_pipeline/reports/latest.json
+            .asset_forge_runtime/generated_assets/current_batch
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Commit checkpoint
+        if: always()
+        run: |
+          git config user.name "kurukshetra-asset-forge[bot]"
+          git config user.email "kurukshetra-asset-forge[bot]@users.noreply.github.com"
+          git add asset_pipeline/state/checkpoint.csv asset_pipeline/reports/latest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update Kurukshetra asset checkpoint"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+
+      - name: Dispatch next batch
+        if: ${{ success() && inputs.auto_continue != 'false' && fromJSON(steps.forge.outputs.eligible_remaining || '0') > 0 }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 20
+          gh workflow run kurukshetra-assets.yml --ref "$GITHUB_REF_NAME" \
+            -f batch_size="${{ inputs.batch_size || '30' }}" \
+            -f category="${{ inputs.category || 'all' }}" \
+            -f auto_continue=true
