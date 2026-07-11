@@ -37,38 +37,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install bootstrap dependencies
-        run: pip install google-api-python-client google-auth
-
-      - name: Download Asset Forge runtime from Drive
-        env:
-          GOOGLE_DRIVE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS_JSON }}
-          RUNTIME_FILE_ID: "156HgnWG5ucCxDQT8y9UCLmcbm0zBgJ15"
+      - name: Expand Asset Forge runtime
         run: |
-          python - <<'PY'
-          import json, os
-          from google.oauth2.credentials import Credentials
-          from googleapiclient.discovery import build
-          from googleapiclient.http import MediaIoBaseDownload
-          info = json.loads(os.environ["GOOGLE_DRIVE_CREDENTIALS_JSON"])
-          creds = Credentials.from_authorized_user_info(info, scopes=["https://www.googleapis.com/auth/drive"])
-          drive = build("drive", "v3", credentials=creds, cache_discovery=False)
-          request = drive.files().get_media(fileId=os.environ["RUNTIME_FILE_ID"])
-          with open("/tmp/kurukshetra_asset_forge_runtime.zip", "wb") as output:
-              downloader = MediaIoBaseDownload(output, request, chunksize=10 * 1024 * 1024)
-              done = False
-              while not done:
-                  status, done = downloader.next_chunk()
-                  if status:
-                      print(f"runtime download {status.progress() * 100:.1f}%")
-          PY
           rm -rf .asset_forge_runtime
-          mkdir .asset_forge_runtime
+          mkdir -p .asset_forge_runtime
+          cat asset_pipeline/forge_runtime.zip.b64.part* | base64 --decode > /tmp/kurukshetra_asset_forge_runtime.zip
           unzip -q /tmp/kurukshetra_asset_forge_runtime.zip -d .asset_forge_runtime
           mkdir -p .asset_forge_runtime/asset_pipeline/state
-          if [ -f asset_pipeline/state/checkpoint.csv ]; then
-            cp asset_pipeline/state/checkpoint.csv .asset_forge_runtime/asset_pipeline/state/checkpoint.csv
-          fi
+          cp asset_pipeline/state/checkpoint.csv .asset_forge_runtime/asset_pipeline/state/checkpoint.csv
 
       - name: Install runtime dependencies
         run: pip install -r .asset_forge_runtime/asset_pipeline/requirements.txt
@@ -78,7 +54,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GOOGLE_DRIVE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS_JSON }}
-          GOOGLE_DRIVE_ROOT_FOLDER_ID: "1cV-fAlJQjpJ-CnAZ_x27sBkR-yCpOATw"
+          GOOGLE_DRIVE_ROOT_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_ROOT_FOLDER_ID }}
           BATCH_SIZE: ${{ inputs.batch_size || '30' }}
           CATEGORY: ${{ inputs.category || 'all' }}
           OPENAI_IMAGE_MODEL_OPAQUE: gpt-image-2
@@ -92,9 +68,11 @@ jobs:
           cd .asset_forge_runtime
           python tools/kurukshetra_asset_runner.py --batch-size "$BATCH_SIZE" --category "$CATEGORY"
           cd ..
-          mkdir -p asset_pipeline/state asset_pipeline/reports
+          mkdir -p asset_pipeline/state asset_pipeline/reports generated_assets
           cp .asset_forge_runtime/asset_pipeline/state/checkpoint.csv asset_pipeline/state/checkpoint.csv
           cp .asset_forge_runtime/asset_pipeline/reports/latest.json asset_pipeline/reports/latest.json
+          rm -rf generated_assets/current_batch
+          cp -R .asset_forge_runtime/generated_assets/current_batch generated_assets/current_batch
 
       - name: Upload run report artifact
         if: always()
@@ -104,7 +82,7 @@ jobs:
           path: |
             asset_pipeline/state/checkpoint.csv
             asset_pipeline/reports/latest.json
-            .asset_forge_runtime/generated_assets/current_batch
+            generated_assets/current_batch
           if-no-files-found: warn
           retention-days: 14
 
