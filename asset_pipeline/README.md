@@ -4,40 +4,47 @@ This pipeline generates the 315 assets in the Kurukshetra CSV manifest in resuma
 
 ## What it does
 
-1. Downloads the validated Asset Forge runtime ZIP from Google Drive.
+1. Expands the self-contained Asset Forge runtime stored in `asset_pipeline/forge_runtime.zip.b64.part*`.
 2. Reads the 315-row prompt manifest.
 3. Selects the next 30 eligible rows.
 4. Uses `gpt-image-2` for opaque artwork and `gpt-image-1.5` for transparent PNGs.
-5. Runs PNG, dimension, alpha, and optional vision QA.
-6. Retries failed QA up to three times.
-7. Uploads accepted images to the matching Drive category/subject folder.
+5. Runs PNG, dimension, alpha, and vision QA.
+6. Retries failed QA up to three times with correction feedback.
+7. Uploads accepted images to the matching Drive category and subject folder.
 8. Updates `asset_pipeline/state/checkpoint.csv` after every asset.
-9. Commits the checkpoint and latest report.
-10. Starts the next batch automatically until no eligible rows remain.
+9. Mirrors the checkpoint and latest report into Google Drive.
+10. Commits checkpoint changes into GitHub.
+11. Dispatches the next batch automatically until no eligible rows remain.
 
 ## Google Drive destination
 
-Production root folder ID:
+Production root folder:
+
+```text
+Kurukshetra Complete Asset Production v1.0
+```
+
+Folder ID:
 
 ```text
 1cV-fAlJQjpJ-CnAZ_x27sBkR-yCpOATw
-```
-
-Runtime ZIP file ID:
-
-```text
-156HgnWG5ucCxDQT8y9UCLmcbm0zBgJ15
 ```
 
 ## Required GitHub Actions secrets
 
 Open the repository and go to **Settings → Secrets and variables → Actions**.
 
-Create:
+Create these three repository secrets:
 
 ### `OPENAI_API_KEY`
 
 An OpenAI API key with access to GPT Image models. OpenAI may require API organization verification for GPT Image access.
+
+### `GOOGLE_DRIVE_ROOT_FOLDER_ID`
+
+```text
+1cV-fAlJQjpJ-CnAZ_x27sBkR-yCpOATw
+```
 
 ### `GOOGLE_DRIVE_CREDENTIALS_JSON`
 
@@ -69,7 +76,7 @@ Cancel the current workflow to pause. Run it again to resume. The checkpoint and
 
 ## Cost controls
 
-The workflow defaults to high-quality image generation and semantic QA. Review current OpenAI image pricing before launching the full manifest. To lower cost, edit `.github/workflows/kurukshetra-assets.yml` and change `IMAGE_QUALITY` to `medium`, or temporarily set `SEMANTIC_QA_ENABLED` to `false`.
+The workflow defaults to high-quality image generation and semantic QA. Review current OpenAI image pricing before launching the full manifest. To lower cost, edit `.github/workflows/kurukshetra-assets.yml` and change `IMAGE_QUALITY` to `medium`, or set `SEMANTIC_QA_ENABLED` to `false`.
 
 ## Output layout
 
