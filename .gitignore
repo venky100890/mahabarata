@@ -1,0 +1,14 @@
+# Kurukshetra Asset Forge runtime outputs
+generated_assets/
+tools/asset_forge/data/kurukshetra_full_prompt_list.csv
+asset-forge-status.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+
+# Google credentials
+service-account*.json
+credentials*.json
